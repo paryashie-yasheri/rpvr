@@ -6,8 +6,14 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/BeachRestaurant/Scenes/BeachRestaurant_Blockout.unity
+    guid: 5f69bc6d5cb4f3181aa4ad043f95a72c
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 2483de527f77baf0586201a294f10910, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 8822cc5787e378d90b63593367fee599, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 292af4a48c1526c36beed78168105839, type: 2}
