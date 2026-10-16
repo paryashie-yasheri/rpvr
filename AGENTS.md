@@ -20,8 +20,8 @@
   unity command eval --project-path /home/huji/dev/rpvr/beach-cafe 'RPVRPickupSmokeTest.Run();'
   ```
 
-- The XR Device Simulator overlay is the source of truth for its current key labels. In the current setup, `W/A/S/D` and `Q/E` move the simulated controller, `T`/`Y` select controllers, and the left mouse button simulates the trigger. Player movement was moved to `I/J/K/L` so `W/A/S/D` remain available to the simulator.
-- Both hands' XRI Select button and value actions are bound to their trigger controls in `beach-cafe/Assets/Samples/XR Interaction Toolkit/3.4.1/Starter Assets/XRI Default Input Actions.inputactions`.
+- Keep the project's `.inputactions` assets aligned with `/home/huji/dev/gamedev/MyRoomGame`; it is the reference source for action maps and bindings. In particular, the default `Player/Move` map uses `W/A/S/D`, and both hands' XRI Select button/value actions retain the reference `GripButton`/`Grip` bindings plus `TriggerButton`/`Trigger` bindings so the simulator's left-mouse trigger can pick up items.
+- The XR Device Simulator overlay is the source of truth for its current key labels. In the current setup, `W/A/S/D` and `Q/E` move the simulated controller, `T`/`Y` select controllers, and the left mouse button simulates the trigger.
 
 ## Validation and repository hygiene
 

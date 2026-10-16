@@ -26,9 +26,9 @@ public static class RPVRPickupSmokeTest
         var leftHand = UnityEngine.Object.FindObjectsByType<NearFarInteractor>()
             .FirstOrDefault(interactor => interactor.transform.parent != null &&
                                          interactor.transform.parent.name == "Left Controller");
-        if (leftHand == null || !HasTriggerSelectionBinding(leftHand, "LeftHand") ||
-            !HasTriggerSelectionBinding(rightHand, "RightHand"))
-            throw new InvalidOperationException("Both controller Select actions must be bound to their hand's XR trigger button.");
+        if (leftHand == null || !HasGripAndTriggerSelectionBindings(leftHand, "LeftHand") ||
+            !HasGripAndTriggerSelectionBindings(rightHand, "RightHand"))
+            throw new InvalidOperationException("Both controller Select actions must include the reference grip bindings and simulator trigger bindings.");
 
         var body = item.GetComponent<Rigidbody>();
         if (body == null)
@@ -77,14 +77,18 @@ public static class RPVRPickupSmokeTest
         }
     }
 
-    static bool HasTriggerSelectionBinding(NearFarInteractor interactor, string hand)
+    static bool HasGripAndTriggerSelectionBindings(NearFarInteractor interactor, string hand)
     {
         var selectAction = interactor.selectInput.inputActionReferencePerformed?.action;
         var selectValueAction = interactor.selectInput.inputActionReferenceValue?.action;
+        var gripButton = $"<XRController>{{{hand}}}/{{GripButton}}";
+        var gripValue = $"<XRController>{{{hand}}}/{{Grip}}";
         var triggerButton = $"<XRController>{{{hand}}}/{{TriggerButton}}";
         var triggerValue = $"<XRController>{{{hand}}}/{{Trigger}}";
 
-        return selectAction != null && selectAction.bindings.Any(binding => binding.path == triggerButton) &&
-               selectValueAction != null && selectValueAction.bindings.Any(binding => binding.path == triggerValue);
+        return selectAction != null && selectAction.bindings.Any(binding => binding.path == gripButton) &&
+               selectAction.bindings.Any(binding => binding.path == triggerButton) &&
+               selectValueAction != null && selectValueAction.bindings.Any(binding => binding.path == gripValue) &&
+               selectValueAction.bindings.Any(binding => binding.path == triggerValue);
     }
 }
