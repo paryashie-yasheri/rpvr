@@ -1662,13 +1662,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 622471428}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 1, z: 0, w: -0.00000004371139}
+  m_LocalRotation: {x: -0, y: 0.0000029504295, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1.99, z: 0.78}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 843567202}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -360, z: 0}
 --- !u!102 &622471430
 TextMesh:
   serializedVersion: 3
@@ -2151,6 +2151,7 @@ GameObject:
   - component: {fileID: 881189530}
   - component: {fileID: 881189534}
   - component: {fileID: 881189535}
+  - component: {fileID: 881189536}
   m_Layer: 0
   m_Name: Top Bun
   m_TagString: Untagged
@@ -2409,6 +2410,19 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &881189536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 881189528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a589353e87078f56ea8cf114f469a54e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BurgerIngredient
+  kind: 2
 --- !u!1 &927965555
 GameObject:
   m_ObjectHideFlags: 0
@@ -3389,6 +3403,7 @@ GameObject:
   - component: {fileID: 1457844750}
   - component: {fileID: 1457844751}
   - component: {fileID: 1457844752}
+  - component: {fileID: 1457844753}
   m_Layer: 0
   m_Name: Patty
   m_TagString: Untagged
@@ -3657,8 +3672,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b17a7e74d9e24972a17ca2d1d1c10002, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   secondsToCook: 10
   cookProgress: 0
 --- !u!114 &1457844752
@@ -3671,8 +3686,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b17a7e74d9e24972a17ca2d1d1c10003, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   progressRange: 1.5
   gradient:
     serializedVersion: 2
@@ -3704,6 +3719,19 @@ MonoBehaviour:
     m_ColorSpace: 0
     m_NumColorKeys: 3
     m_NumAlphaKeys: 2
+--- !u!114 &1457844753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1457844743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a589353e87078f56ea8cf114f469a54e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BurgerIngredient
+  kind: 1
 --- !u!1 &1567495179
 GameObject:
   m_ObjectHideFlags: 0
@@ -4723,6 +4751,8 @@ GameObject:
   - component: {fileID: 1871803268}
   - component: {fileID: 1871803272}
   - component: {fileID: 1871803273}
+  - component: {fileID: 1871803275}
+  - component: {fileID: 1871803274}
   m_Layer: 0
   m_Name: Bottom Bun
   m_TagString: Untagged
@@ -4981,6 +5011,33 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1871803274
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1871803266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32f7115619151ac8e978df8c4b6155d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BurgerAssembly
+  snapDistance: 0.2
+  allowedIngredients: 0100000002000000i
+--- !u!114 &1871803275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1871803266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a589353e87078f56ea8cf114f469a54e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BurgerIngredient
+  kind: 0
 --- !u!1 &1886354862
 GameObject:
   m_ObjectHideFlags: 0
@@ -5499,8 +5556,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b17a7e74d9e24972a17ca2d1d1c10001, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2041780490
 PrefabInstance:
   m_ObjectHideFlags: 0

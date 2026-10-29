@@ -1,0 +1,220 @@
+{
+    "events": [
+        {
+            "time": 1.0041731595993042,
+            "keys": "1,43",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 1.205525279045105,
+            "keys": "1",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 1.407147765159607,
+            "keys": "1,15,31,37",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 2.2890095710754395,
+            "keys": "1,15,37",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 3.0593154430389404,
+            "keys": "1,37",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 4.712063789367676,
+            "keys": "1",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 5.018093109130859,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 5.524702072143555,
+            "keys": "1,19",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 6.857244968414307,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 6.857244968414307,
+            "keys": "1,18,31",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 6.954699993133545,
+            "keys": "1,18",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 8.613880157470703,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 9.114023208618164,
+            "keys": "",
+            "trigger": false,
+            "checkpoint": "preview"
+        },
+        {
+            "time": 9.114023208618164,
+            "keys": "1",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 10.120603561401367,
+            "keys": "",
+            "trigger": false,
+            "checkpoint": "snapped"
+        },
+        {
+            "time": 10.120603561401367,
+            "keys": "1,31",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 10.405488014221191,
+            "keys": "1",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 10.711079597473145,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 11.217835426330566,
+            "keys": "1,19",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 12.80087661743164,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 13.307809829711914,
+            "keys": "",
+            "trigger": false,
+            "checkpoint": "moved"
+        },
+        {
+            "time": 13.307809829711914,
+            "keys": "1",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 14.314716339111328,
+            "keys": "1,18,31,37",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 14.370046615600586,
+            "keys": "1,18,31",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 16.12682342529297,
+            "keys": "1,31",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 16.98805809020996,
+            "keys": "1",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 17.29326820373535,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 17.80019187927246,
+            "keys": "1,19",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 19.13375473022461,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 19.13375473022461,
+            "keys": "1,15,19,33",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 19.175025939941406,
+            "keys": "1,15,19",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 19.806997299194336,
+            "keys": "1,15",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 20.87614631652832,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": ""
+        },
+        {
+            "time": 21.181753158569336,
+            "keys": "",
+            "trigger": false,
+            "checkpoint": "top-preview"
+        },
+        {
+            "time": 21.181753158569336,
+            "keys": "1",
+            "trigger": false,
+            "checkpoint": ""
+        },
+        {
+            "time": 22.18869400024414,
+            "keys": "",
+            "trigger": false,
+            "checkpoint": "complete"
+        }
+    ]
+}
