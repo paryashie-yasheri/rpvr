@@ -174,12 +174,15 @@ public class BurgerAssembly : MonoBehaviour
         item.transform.SetParent(assemblyBody.transform, true);
         item.transform.SetPositionAndRotation(position, rotation);
         Destroy(itemGrab);
-        ingredients.Add(item);
-        closed = item.kind == BurgerIngredient.IngredientKind.TopBun;
         yield return null; // Grab interactables must be removed before their required rigidbodies.
         Destroy(itemBody);
         if (baseBody) Destroy(baseBody);
         yield return null;
+        // XRI completes its release during the frame after deselection. Apply the final
+        // pose only once it can no longer overwrite the newly attached ingredient.
+        item.transform.SetPositionAndRotation(SnapPosition(item), transform.rotation);
+        ingredients.Add(item);
+        closed = item.kind == BurgerIngredient.IngredientKind.TopBun;
         assemblyGrab.enabled = false;
         assemblyGrab.colliders.Clear();
         foreach (var collider in assemblyBody.GetComponentsInChildren<Collider>())

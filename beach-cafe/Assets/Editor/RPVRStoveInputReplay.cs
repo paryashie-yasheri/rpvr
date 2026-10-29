@@ -150,6 +150,7 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(1f);
         hand = GameObject.Find("Right Controller").transform;
         patty = GameObject.Find("Patty").GetComponent<StoveCookable>();
+        Require(patty.secondsToCook == 30f, "Cooking time is not 30 seconds");
         grab = patty.GetComponent<XRGrabInteractable>();
         interactor = hand.GetComponentInChildren<NearFarInteractor>();
         patty.Ready += OnReady;
@@ -181,10 +182,32 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(1f);
         Require(!interactor.interactablesSelected.Contains(grab), "Patty did not release");
         Record("released");
-        float deadline = Time.time + 20f;
+        var steam = GameObject.Find("Sizzle steam").GetComponent<ParticleSystem>();
+        var smoke = GameObject.Find("Overcooking smoke").GetComponent<ParticleSystem>();
+        bool sawReadyRange = false;
+        bool sawSmoke = false;
+        bool sawOvercooked = false;
+        float deadline = Time.time + 50f;
         while (patty.cookProgress < 1.55f && Time.time < deadline)
         {
             if (ready && stoveAudio.isPlaying) heardReady = true;
+            if (patty.cookProgress >= 0.81f && patty.cookProgress < 0.95f && !sawReadyRange)
+            {
+                Require(patty.IsReady && steam.isEmitting && !smoke.isEmitting, "Ready range or pre-smoke steam is incorrect");
+                sawReadyRange = true;
+                Record("ready-start");
+            }
+            if (patty.cookProgress >= 1.03f && !sawSmoke)
+            {
+                Require(patty.IsReady && smoke.isEmitting, "Smoke did not start at progress 1.0");
+                sawSmoke = true;
+                Record("smoking");
+            }
+            if (patty.cookProgress > 1.21f && !sawOvercooked)
+            {
+                Require(!patty.IsReady && patty.IsOvercooked, "Ready range did not end at 1.2");
+                sawOvercooked = true;
+            }
             if (patty.cookProgress >= 1f && !observations.Any(x => x.StartsWith("ready ")))
             {
                 Require(ColorNear(new Color(0.36f, 0.15f, 0.07f)), "Ready Patty did not turn brown");
@@ -193,6 +216,7 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
             yield return null;
         }
         Require(ready, "Ready event did not fire");
+        Require(sawReadyRange && sawSmoke && sawOvercooked, "Cooking state transitions were not all observed");
         Require(heardReady, "The stove did not play the ready tone");
         Require(readyCount == 1, "The ready signal did not fire exactly once");
         Require(patty.cookProgress >= 1.5f, "Patty did not continue cooking past ready");

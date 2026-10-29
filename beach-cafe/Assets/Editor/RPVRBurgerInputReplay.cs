@@ -69,7 +69,7 @@ public static class RPVRBurgerInputReplay
 
 public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
 {
-    [Serializable] private class ReplayEvent { public float time; public string keys; public bool trigger; public string checkpoint; }
+    [Serializable] private class ReplayEvent { public float time; public string keys; public bool trigger; public string checkpoint; public Vector2 mouseDelta; }
     [Serializable] private class ReplayTrace { public List<ReplayEvent> events = new List<ReplayEvent>(); }
     public bool record;
     private ReplayTrace trace = new ReplayTrace();
@@ -90,17 +90,19 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
 
     private void Start() => StartCoroutine(Replay());
 
-    private void Input(params Key[] keys)
+    private void Input(params Key[] keys) => InputWithMouse(Vector2.zero, keys);
+
+    private void InputWithMouse(Vector2 delta, params Key[] keys)
     {
         string keyText = string.Join(",", keys.Select(key => ((int)key).ToString()));
-        if (record && (keyText != previousInput || trigger != previousTrigger))
+        if (record && (keyText != previousInput || trigger != previousTrigger || delta != Vector2.zero))
         {
-            trace.events.Add(new ReplayEvent { time = Time.time - startedAt, keys = keyText, trigger = trigger });
+            trace.events.Add(new ReplayEvent { time = Time.time - startedAt, keys = keyText, trigger = trigger, mouseDelta = delta });
             previousInput = keyText;
             previousTrigger = trigger;
         }
         InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys));
-        var state = new MouseState();
+        var state = new MouseState { delta = delta };
         if (trigger) state = state.WithButton(MouseButton.Left);
         InputSystem.QueueStateEvent(mouse, state);
     }
@@ -113,8 +115,7 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
             if (Time.time > deadline)
                 Require(false, $"Movement timed out: hand={hand.position}, target={target}");
             Vector3 delta = target - hand.position;
-            var parent = Camera.main.transform.parent;
-            if (parent) delta = parent.InverseTransformDirection(delta);
+            delta = hand.InverseTransformDirection(delta);
             var keys = new List<Key> { Key.Space };
             if (delta.x > 0.02f) keys.Add(Key.D); else if (delta.x < -0.02f) keys.Add(Key.A);
             if (delta.y > 0.02f) keys.Add(Key.E); else if (delta.y < -0.02f) keys.Add(Key.Q);
@@ -188,15 +189,24 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
                 if (e.checkpoint == "preview") Require(assembly.PreviewObject && assembly.PreviewIngredient == patty.GetComponent<BurgerIngredient>(), "Patty preview missing during replay");
                 if (e.checkpoint == "snapped") Require(assembly.IngredientCount == 2 && patty.GetComponentInParent<Rigidbody>() == assembly.AssemblyBody, "Patty did not snap during replay");
                 if (e.checkpoint == "moved") Require(interactor.interactablesSelected.Contains(assembly.AssemblyBody.GetComponent<XRGrabInteractable>()), "Burger was not held during replay");
-                if (e.checkpoint == "top-preview") Require(assembly.PreviewObject && assembly.PreviewIngredient == GameObject.Find("Top Bun").GetComponent<BurgerIngredient>(), "Top bun preview missing during replay");
-                if (e.checkpoint == "complete") Require(assembly.IngredientCount == 3 && assembly.AssemblyBody.GetComponentsInChildren<Rigidbody>().Length == 1, "Burger did not assemble into one body during replay");
+                if (e.checkpoint == "top-preview")
+                {
+                    var top = GameObject.Find("Top Bun");
+                    Require(assembly.PreviewObject && assembly.PreviewIngredient == top.GetComponent<BurgerIngredient>(), "Top bun preview missing during replay");
+                    Require(Quaternion.Angle(top.transform.rotation, bun.transform.rotation) > 10f, "Recorded rotation did not tilt the held bun");
+                }
+                if (e.checkpoint == "complete")
+                {
+                    Require(assembly.IngredientCount == 3 && assembly.AssemblyBody.GetComponentsInChildren<Rigidbody>().Length == 1, "Burger did not assemble into one body during replay");
+                    CheckAlignment(bun.transform, patty.transform, GameObject.Find("Top Bun").transform);
+                }
                 Record(e.checkpoint);
             }
             else
             {
                 trigger = e.trigger;
                 var keys = string.IsNullOrEmpty(e.keys) ? Array.Empty<Key>() : e.keys.Split(',').Select(value => (Key)int.Parse(value)).ToArray();
-                Input(keys);
+                InputWithMouse(e.mouseDelta, keys);
             }
         }
         finished = true;
@@ -267,6 +277,13 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
         Input(Key.Space);
         yield return new WaitForSeconds(0.5f);
         Require(interactor.interactablesSelected.Contains(topGrab), "Could not grab top bun");
+        Input(Key.Space, Key.LeftCtrl);
+        yield return new WaitForSeconds(0.2f);
+        InputWithMouse(new Vector2(120f, 100f), Key.Space, Key.LeftCtrl);
+        yield return new WaitForSeconds(0.2f);
+        Input(Key.Space);
+        yield return new WaitForSeconds(0.5f);
+        Require(Quaternion.Angle(top.transform.rotation, bun.transform.rotation) > 10f, "Top bun was not rotated before snapping");
         Vector3 topOffset = hand.position - top.transform.position;
         yield return Move(hand.position + Vector3.up * 0.3f);
         var pattyCollider = patty.GetComponent<Collider>();
@@ -282,9 +299,30 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
         Require(assembly.IngredientCount == 3, "Top bun did not attach");
         Require(assembly.AssemblyBody.GetComponentsInChildren<Rigidbody>().Length == 1, "Completed burger has more than one Rigidbody");
         Require(top.GetComponentInParent<Rigidbody>() == assembly.AssemblyBody, "Top bun is not part of the assembly body");
+        CheckAlignment(bun.transform, patty.transform, top.transform);
         Record("complete");
         File.WriteAllText(Path.Combine(RPVRBurgerInputReplay.OutputDirectory, "recording.json"), JsonUtility.ToJson(trace, true));
         File.WriteAllText(Path.Combine(RPVRBurgerInputReplay.OutputDirectory, "result.txt"), "RECORDED\n" + string.Join("\n", observations));
+    }
+
+    private void CheckAlignment(Transform bun, Transform meat, Transform top)
+    {
+        Require(Quaternion.Angle(bun.rotation, meat.rotation) < 2f && Quaternion.Angle(bun.rotation, top.rotation) < 2f,
+            $"Attached ingredients are tilted: patty={Quaternion.Angle(bun.rotation, meat.rotation):F1}, top={Quaternion.Angle(bun.rotation, top.rotation):F1}");
+        CheckContact(bun, meat, bun.up);
+        CheckContact(meat, top, bun.up);
+    }
+
+    private void CheckContact(Transform lower, Transform upper, Vector3 up)
+    {
+        var a = lower.GetComponent<MeshCollider>();
+        var b = upper.GetComponent<MeshCollider>();
+        var ab = a.sharedMesh.bounds;
+        var bb = b.sharedMesh.bounds;
+        float centerDistance = Vector3.Dot(b.transform.TransformPoint(bb.center) - a.transform.TransformPoint(ab.center), up);
+        float expected = Mathf.Abs(Vector3.Dot(a.transform.TransformVector(Vector3.up * ab.extents.y), up)) +
+                         Mathf.Abs(Vector3.Dot(b.transform.TransformVector(Vector3.up * bb.extents.y), up));
+        Require(Mathf.Abs(centerDistance - expected) < 0.01f, $"Gap between {lower.name} and {upper.name}: {centerDistance - expected:F3} m");
     }
 
     private void Record(string stage)

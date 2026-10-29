@@ -1,268 +1,424 @@
 {
     "events": [
         {
-            "time": 1.0,
+            "time": 1.0025163888931274,
             "keys": "1,43",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 1.3333333730697632,
+            "time": 1.2036809921264648,
             "keys": "1",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 1.6666667461395264,
+            "time": 1.4054090976715088,
             "keys": "1,15,31,37",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 4.696883678436279,
+            "time": 4.134250640869141,
             "keys": "1,15,37",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 6.372690200805664,
+            "time": 5.543728828430176,
             "keys": "1,37",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 6.706023216247559,
-            "keys": "1,18,37",
-            "trigger": false,
-            "checkpoint": ""
-        },
-        {
-            "time": 7.048911094665527,
-            "keys": "1,37",
-            "trigger": false,
-            "checkpoint": ""
-        },
-        {
-            "time": 10.072701454162598,
+            "time": 9.633593559265137,
             "keys": "1",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 10.406034469604492,
+            "time": 9.938979148864746,
             "keys": "1",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 11.072701454162598,
+            "time": 10.445921897888184,
             "keys": "1,19",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 14.43105411529541,
+            "time": 13.771873474121094,
             "keys": "1",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 14.43105411529541,
+            "time": 13.771873474121094,
+            "keys": "1,18,31,37",
+            "trigger": true,
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "time": 13.806382179260254,
             "keys": "1,18,31",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 16.437942504882813,
+            "time": 15.472914695739746,
             "keys": "1,18",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 16.77127456665039,
-            "keys": "1,18,19",
-            "trigger": true,
-            "checkpoint": ""
-        },
-        {
-            "time": 17.443836212158203,
-            "keys": "1,18",
-            "trigger": true,
-            "checkpoint": ""
-        },
-        {
-            "time": 17.777170181274414,
-            "keys": "1,18,31",
-            "trigger": true,
-            "checkpoint": ""
-        },
-        {
-            "time": 18.455739974975586,
-            "keys": "1,18",
-            "trigger": true,
-            "checkpoint": ""
-        },
-        {
-            "time": 18.789073944091797,
-            "keys": "1,18,19",
-            "trigger": true,
-            "checkpoint": ""
-        },
-        {
-            "time": 19.463298797607422,
+            "time": 18.2573299407959,
             "keys": "1",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 20.13801383972168,
+            "time": 18.764278411865234,
             "keys": "",
             "trigger": false,
-            "checkpoint": "preview"
+            "checkpoint": "preview",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 20.13801383972168,
+            "time": 18.764278411865234,
             "keys": "1",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 21.15127944946289,
+            "time": 19.77059555053711,
             "keys": "",
             "trigger": false,
-            "checkpoint": "snapped"
+            "checkpoint": "snapped",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 21.15127944946289,
-            "keys": "1,15,31",
+            "time": 19.77059555053711,
+            "keys": "1,31,37",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 21.493133544921875,
+            "time": 19.87501335144043,
             "keys": "1,31",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 22.159799575805664,
+            "time": 20.687137603759766,
             "keys": "1",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 22.493133544921875,
+            "time": 20.987625122070313,
             "keys": "1",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 23.16798973083496,
+            "time": 21.492572784423828,
             "keys": "1,19",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 27.534208297729492,
+            "time": 25.44365692138672,
             "keys": "1",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 28.20087432861328,
+            "time": 25.950368881225586,
             "keys": "",
             "trigger": false,
-            "checkpoint": "moved"
+            "checkpoint": "moved",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 28.20087432861328,
+            "time": 25.950368881225586,
             "keys": "1",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 29.210861206054688,
+            "time": 26.957094192504883,
             "keys": "1,18,31,37",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 29.885608673095703,
+            "time": 27.01972198486328,
             "keys": "1,18,31",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 30.218942642211914,
-            "keys": "1,18,31,33",
+            "time": 30.866416931152344,
+            "keys": "1,18",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 30.558517456054688,
-            "keys": "1,18,31",
-            "trigger": false,
-            "checkpoint": ""
-        },
-        {
-            "time": 33.57252883911133,
+            "time": 31.33856201171875,
             "keys": "1",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 33.90586471557617,
+            "time": 31.643980026245117,
             "keys": "1",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 34.57252883911133,
+            "time": 32.14402770996094,
+            "keys": "1,55",
+            "trigger": true,
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "time": 32.345279693603516,
+            "keys": "1,55",
+            "trigger": true,
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 120.0,
+                "y": 100.0
+            }
+        },
+        {
+            "time": 32.5467529296875,
+            "keys": "1",
+            "trigger": true,
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "time": 33.053585052490234,
+            "keys": "1,19,37",
+            "trigger": true,
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "time": 34.09528350830078,
             "keys": "1,19",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 38.26191329956055,
+            "time": 36.219966888427734,
             "keys": "1",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 38.26191329956055,
-            "keys": "1,15,31",
+            "time": 36.219966888427734,
+            "keys": "1,15,31,33",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 39.9362907409668,
+            "time": 36.60861587524414,
+            "keys": "1,15,33",
+            "trigger": true,
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "time": 38.198646545410156,
             "keys": "1,15",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 42.6239128112793,
+            "time": 40.25399398803711,
             "keys": "1",
             "trigger": true,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 42.957244873046875,
+            "time": 40.55945587158203,
             "keys": "",
             "trigger": false,
-            "checkpoint": "top-preview"
+            "checkpoint": "top-preview",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 42.957244873046875,
+            "time": 40.55945587158203,
             "keys": "1",
             "trigger": false,
-            "checkpoint": ""
+            "checkpoint": "",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         },
         {
-            "time": 43.96758270263672,
+            "time": 41.56616973876953,
             "keys": "",
             "trigger": false,
-            "checkpoint": "complete"
+            "checkpoint": "complete",
+            "mouseDelta": {
+                "x": 0.0,
+                "y": 0.0
+            }
         }
     ]
 }
