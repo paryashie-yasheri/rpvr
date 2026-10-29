@@ -82,14 +82,14 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
 
     private IEnumerator Move(Vector3 target, float timeout = 20f)
     {
-        float deadline = Time.realtimeSinceStartup + timeout;
+        float deadline = Time.time + timeout;
         while (Vector3.Distance(hand.position, target) > 0.035f)
         {
-            if (Time.realtimeSinceStartup > deadline)
+            if (Time.time > deadline)
                 Require(false, $"Movement timed out: hand={hand.position}, target={target}");
             Vector3 delta = target - hand.position;
-            var parent = Camera.main.transform.parent;
-            if (parent) delta = parent.InverseTransformDirection(delta);
+            // The simulator's Local keyboard translation follows the controller rotation.
+            delta = hand.InverseTransformDirection(delta);
             var keys = new List<Key> { Key.Space };
             if (delta.x > 0.02f) keys.Add(Key.D); else if (delta.x < -0.02f) keys.Add(Key.A);
             if (delta.y > 0.02f) keys.Add(Key.E); else if (delta.y < -0.02f) keys.Add(Key.Q);
@@ -98,6 +98,28 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
             yield return null;
         }
         Input(Key.Space);
+    }
+
+    // Use the simulator's FPS-mode mouse input to turn the player's actual view toward the grill.
+    private IEnumerator LookAt(Vector3 target)
+    {
+        Input(Key.U);
+        yield return new WaitForSeconds(0.2f);
+        Input();
+        yield return new WaitForSeconds(0.2f);
+        var camera = Camera.main;
+        var simulator = FindAnyObjectByType<UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRDeviceSimulator>();
+        var desired = Quaternion.LookRotation(target - camera.transform.position).eulerAngles;
+        var current = camera.transform.eulerAngles;
+        var delta = new Vector2(Mathf.DeltaAngle(current.y, desired.y) / simulator.mouseXRotateSensitivity,
+            -Mathf.DeltaAngle(current.x, desired.x) / simulator.mouseYRotateSensitivity);
+        InputSystem.QueueStateEvent(mouse, new MouseState { delta = delta });
+        yield return new WaitForSeconds(0.3f);
+        Input();
+        yield return new WaitForSeconds(0.2f);
+        var viewport = camera.WorldToViewportPoint(target);
+        Require(viewport.z > 0f && viewport.x > 0.1f && viewport.x < 0.9f && viewport.y > 0.1f && viewport.y < 0.9f,
+            $"Player is not looking at the grill: viewport={viewport}");
     }
 
     private IEnumerator Replay()
@@ -111,9 +133,16 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
         finally
         {
             if (patty) patty.Ready -= OnReady;
-            if (keyboard != null) InputSystem.RemoveDevice(keyboard);
-            if (mouse != null) InputSystem.RemoveDevice(mouse);
+            CleanupDevices();
         }
+    }
+
+    private void OnDestroy() => CleanupDevices();
+
+    private void CleanupDevices()
+    {
+        if (keyboard != null && keyboard.added) InputSystem.RemoveDevice(keyboard);
+        if (mouse != null && mouse.added) InputSystem.RemoveDevice(mouse);
     }
 
     private IEnumerator RunSequence()
@@ -133,7 +162,7 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         Input(Key.Space);
         yield return new WaitForSeconds(0.2f);
-        yield return Move(patty.transform.position + Vector3.up * 0.03f);
+        yield return Move(patty.transform.position + Vector3.up * 0.04f);
         yield return new WaitForSeconds(0.4f);
         trigger = true;
         Input(Key.Space);
@@ -147,11 +176,13 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
         yield return Move(new Vector3(hand.position.x, surface.bounds.max.y + 0.10f + offset.y, hand.position.z));
         trigger = false;
         Input(Key.Space);
+        yield return new WaitForSeconds(0.3f);
+        yield return LookAt(surface.bounds.center);
         yield return new WaitForSeconds(1f);
         Require(!interactor.interactablesSelected.Contains(grab), "Patty did not release");
         Record("released");
-        float deadline = Time.realtimeSinceStartup + 20f;
-        while (patty.cookProgress < 1.55f && Time.realtimeSinceStartup < deadline)
+        float deadline = Time.time + 20f;
+        while (patty.cookProgress < 1.55f && Time.time < deadline)
         {
             if (ready && stoveAudio.isPlaying) heardReady = true;
             if (patty.cookProgress >= 1f && !observations.Any(x => x.StartsWith("ready ")))
@@ -237,6 +268,7 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
         if (condition) return;
         Record("failure");
         File.WriteAllText(Path.Combine(RPVRStoveInputReplay.OutputDirectory, "result.txt"), "FAIL: " + message + "\n" + string.Join("\n", observations));
+        CleanupDevices();
         throw new InvalidOperationException(message);
     }
 }

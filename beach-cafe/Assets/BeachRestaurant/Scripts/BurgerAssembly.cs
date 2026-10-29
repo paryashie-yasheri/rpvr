@@ -70,12 +70,27 @@ public class BurgerAssembly : MonoBehaviour
 
     private Vector3 SnapPosition(BurgerIngredient item)
     {
-        // The blockout ingredients are upright cylinders; collider bounds provide their actual stack height.
-        var baseCollider = ingredients[ingredients.Count - 1].GetComponent<Collider>();
-        var itemCollider = item.GetComponent<Collider>();
-        Vector3 top = baseCollider.bounds.center + transform.up * baseCollider.bounds.extents.y;
-        float halfHeight = itemCollider.bounds.extents.y;
-        return top + transform.up * halfHeight - (itemCollider.bounds.center - item.transform.position);
+        var baseCollider = ingredients[ingredients.Count - 1].GetComponent<MeshCollider>();
+        var itemCollider = item.GetComponent<MeshCollider>();
+        if (!baseCollider || !itemCollider || !baseCollider.sharedMesh || !itemCollider.sharedMesh)
+        {
+            var baseShape = ingredients[ingredients.Count - 1].GetComponent<Collider>();
+            var itemShape = item.GetComponent<Collider>();
+            return baseShape.bounds.center + transform.up * (baseShape.bounds.extents.y + itemShape.bounds.extents.y)
+                   - (itemShape.bounds.center - item.transform.position);
+        }
+        Vector3 up = transform.up;
+        var baseBounds = baseCollider.sharedMesh.bounds;
+        Vector3 center = baseCollider.transform.TransformPoint(baseBounds.center);
+        Vector3 extent = baseBounds.extents;
+        float baseHeight = Mathf.Abs(Vector3.Dot(up, baseCollider.transform.TransformVector(Vector3.right * extent.x)))
+                         + Mathf.Abs(Vector3.Dot(up, baseCollider.transform.TransformVector(Vector3.up * extent.y)))
+                         + Mathf.Abs(Vector3.Dot(up, baseCollider.transform.TransformVector(Vector3.forward * extent.z)));
+        var itemBounds = itemCollider.sharedMesh.bounds;
+        Vector3 scale = item.transform.lossyScale;
+        Vector3 centerOffset = transform.rotation * Vector3.Scale(itemBounds.center, scale);
+        float itemHeight = Mathf.Abs(itemBounds.extents.y * scale.y);
+        return center + up * (baseHeight + itemHeight) - centerOffset;
     }
 
     private void CreatePreview(BurgerIngredient item)

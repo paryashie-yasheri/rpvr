@@ -107,10 +107,10 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
 
     private IEnumerator Move(Vector3 target, float timeout = 20f)
     {
-        float deadline = Time.realtimeSinceStartup + timeout;
+        float deadline = Time.time + timeout;
         while (Vector3.Distance(hand.position, target) > 0.035f)
         {
-            if (Time.realtimeSinceStartup > deadline)
+            if (Time.time > deadline)
                 Require(false, $"Movement timed out: hand={hand.position}, target={target}");
             Vector3 delta = target - hand.position;
             var parent = Camera.main.transform.parent;
@@ -127,6 +127,9 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
 
     private IEnumerator Replay()
     {
+        var simulator = FindAnyObjectByType<UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRDeviceSimulator>();
+        var speeds = new Vector3(simulator.keyboardXTranslateSpeed, simulator.keyboardYTranslateSpeed, simulator.keyboardZTranslateSpeed);
+        simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = 0.08f;
         keyboard = InputSystem.AddDevice<Keyboard>();
         mouse = InputSystem.AddDevice<Mouse>();
         try
@@ -137,9 +140,22 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
         }
         finally
         {
-            if (keyboard != null) InputSystem.RemoveDevice(keyboard);
-            if (mouse != null) InputSystem.RemoveDevice(mouse);
+            if (simulator)
+            {
+                simulator.keyboardXTranslateSpeed = speeds.x;
+                simulator.keyboardYTranslateSpeed = speeds.y;
+                simulator.keyboardZTranslateSpeed = speeds.z;
+            }
+            CleanupDevices();
         }
+    }
+
+    private void OnDestroy() => CleanupDevices();
+
+    private void CleanupDevices()
+    {
+        if (keyboard != null && keyboard.added) InputSystem.RemoveDevice(keyboard);
+        if (mouse != null && mouse.added) InputSystem.RemoveDevice(mouse);
     }
 
     private void Update()
@@ -200,7 +216,7 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         Input(Key.Space);
         yield return new WaitForSeconds(0.2f);
-        yield return Move(patty.transform.position + Vector3.up * 0.03f);
+        yield return Move(patty.transform.position + Vector3.up * 0.04f);
         yield return new WaitForSeconds(0.3f);
         trigger = true;
         Input(Key.Space);
@@ -245,7 +261,7 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
         Require(Mathf.Abs(bun.transform.position.y - startBun.y) < 0.12f, "Released burger did not settle on the counter");
         var top = GameObject.Find("Top Bun");
         var topGrab = top.GetComponent<XRGrabInteractable>();
-        yield return Move(top.transform.position + Vector3.up * 0.03f);
+        yield return Move(top.transform.position + Vector3.up * 0.08f);
         yield return new WaitForSeconds(0.3f);
         trigger = true;
         Input(Key.Space);
@@ -284,6 +300,7 @@ public sealed class RPVRBurgerInputReplayRunner : MonoBehaviour
         finished = true;
         Record("failure");
         File.WriteAllText(Path.Combine(RPVRBurgerInputReplay.OutputDirectory, "result.txt"), "FAIL: " + message + "\n" + string.Join("\n", observations));
+        CleanupDevices();
         throw new InvalidOperationException(message);
     }
 }
