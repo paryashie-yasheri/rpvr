@@ -20,20 +20,28 @@ public class StoveCookableProgressGradient : MonoBehaviour
     private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorProperty = Shader.PropertyToID("_Color");
 
-    private void Awake()
+    private void Awake() => Initialize();
+
+    private void Initialize()
     {
-        cookable = GetComponent<StoveCookable>();
-        targetRenderer = GetComponentInChildren<Renderer>();
-        properties = new MaterialPropertyBlock();
+        if (!cookable) cookable = GetComponent<StoveCookable>();
+        if (!targetRenderer) targetRenderer = GetComponentInChildren<Renderer>();
+        if (properties == null) properties = new MaterialPropertyBlock();
     }
 
     private void OnEnable()
     {
+        Initialize();
+        if (!cookable) return;
+        cookable.ProgressChanged -= UpdateColor;
         cookable.ProgressChanged += UpdateColor;
         UpdateColor(cookable.cookProgress);
     }
 
-    private void OnDisable() => cookable.ProgressChanged -= UpdateColor;
+    private void OnDisable()
+    {
+        if (cookable) cookable.ProgressChanged -= UpdateColor;
+    }
 
     private void UpdateColor(float progress)
     {
@@ -43,5 +51,12 @@ public class StoveCookableProgressGradient : MonoBehaviour
         properties.SetColor(BaseColor, color);
         properties.SetColor(ColorProperty, color);
         targetRenderer.SetPropertyBlock(properties);
+    }
+
+    public void SetGradient(Gradient value)
+    {
+        gradient = value;
+        Initialize();
+        if (cookable) UpdateColor(cookable.cookProgress);
     }
 }

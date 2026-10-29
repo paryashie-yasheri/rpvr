@@ -4,6 +4,8 @@ using UnityEngine.Rendering;
 [RequireComponent(typeof(StoveCookable))]
 public class StoveCookingParticles : MonoBehaviour
 {
+    public bool IsSmoking => smoke && smoke.isEmitting;
+
     private StoveCookable cookable;
     private ParticleSystem steam;
     private ParticleSystem smoke;
@@ -86,8 +88,8 @@ public class StoveCookingParticles : MonoBehaviour
     private void Update()
     {
         effectRoot.transform.position = GetComponent<Collider>().bounds.center + Vector3.up * GetComponent<Collider>().bounds.extents.y;
-        SetEmission(steam, cookable.IsCooking && cookable.cookProgress < 1f);
-        SetEmission(smoke, cookable.IsCooking && cookable.cookProgress >= 1f);
+        SetEmission(steam, cookable.IsCooking && cookable.cookProgress < cookable.smokeStartProgress);
+        SetEmission(smoke, cookable.IsCooking && cookable.cookProgress >= cookable.smokeStartProgress);
     }
 
     private static void SetEmission(ParticleSystem system, bool active)

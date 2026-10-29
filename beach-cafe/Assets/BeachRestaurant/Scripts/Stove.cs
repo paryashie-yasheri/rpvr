@@ -24,7 +24,20 @@ public class Stove : MonoBehaviour
         readyTone.SetData(samples, 0);
     }
 
-    private void OnTriggerEnter(Collider other)
+    // The trigger collider only covers the grill's cooking area. Heat is applied
+    // from collision callbacks on the solid cooking surface, so upper layers in
+    // a stacked burger never cook just because they overlap that trigger volume.
+    private void OnCollisionEnter(Collision collision)
+    {
+        RegisterContact(collision.collider);
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        UnregisterContact(collision.collider);
+    }
+
+    private void RegisterContact(Collider other)
     {
         var item = other.GetComponentInParent<StoveCookable>();
         if (!item || contacts.ContainsKey(other)) return;
@@ -38,7 +51,7 @@ public class Stove : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    private void UnregisterContact(Collider other)
     {
         if (!contacts.TryGetValue(other, out var item)) return;
         contacts.Remove(other);
