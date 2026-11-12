@@ -1,0 +1,7 @@
+newmtl Material.001
+Kd 1 1 1
+map_Kd teks.png
+
+newmtl Material.002
+Kd 1 1 1
+map_Kd teks.png
