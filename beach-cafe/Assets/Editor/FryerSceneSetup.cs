@@ -14,7 +14,7 @@ public static class FryerSceneSetup
         if (EditorSceneManager.GetActiveScene().path != scenePath)
             EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
 
-        var oil = GameObject.Find("Fryer Oil Placeholder");
+        var oil = GameObject.Find("Fryer Cooking Zone") ?? GameObject.Find("Fryer Oil Placeholder");
         var workstations = GameObject.Find("Workstations");
         if (!oil || !workstations)
         {
@@ -25,6 +25,7 @@ public static class FryerSceneSetup
         ConfigureOil(oil);
         CreateOpenBasket();
         CreateFries(workstations.transform);
+        FryerInteractionSetup.Configure();
         EditorSceneManager.SaveOpenScenes();
         Debug.Log("Fryer setup saved: open basket, hot-oil trigger, bubbles, ready tone, and a grabbable fries portion.");
         if (Application.isBatchMode) EditorApplication.Exit(0);

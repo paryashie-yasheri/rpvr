@@ -15,6 +15,22 @@ public class Fryer : MonoBehaviour
     private Material bubbleMaterial;
     private Texture2D bubbleTexture;
 
+    public IEnumerable<FryerCookable> CookingItems => counts.Keys;
+
+    // Clear contacts immediately when a portion is retrieved, rather than waiting
+    // for the next physics tick after its teleport.
+    public void RemoveCookable(FryerCookable item)
+    {
+        if (!counts.Remove(item)) return;
+        var removed = new List<Collider>();
+        foreach (var contact in contacts)
+            if (contact.Value == item) removed.Add(contact.Key);
+        foreach (var collider in removed) contacts.Remove(collider);
+        if (!item) return;
+        item.Ready -= OnReady;
+        item.ExitFryer(this);
+    }
+
     private void Awake()
     {
         zone = GetComponent<BoxCollider>();
