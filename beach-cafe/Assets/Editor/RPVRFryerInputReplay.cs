@@ -57,8 +57,22 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
     private XRGrabInteractable grab;
     private readonly Dictionary<Canvas, bool> overlayStates = new Dictionary<Canvas, bool>();
     private readonly List<string> observations = new List<string>();
+    private bool oldBackground;
+    private InputSettings.BackgroundBehavior oldInputBackground;
+    private InputSettings.EditorInputBehaviorInPlayMode oldEditorInput;
+    private bool inputConfigured;
 
-    private void Start() => StartCoroutine(Replay());
+    private void Start()
+    {
+        oldBackground = Application.runInBackground;
+        oldInputBackground = InputSystem.settings.backgroundBehavior;
+        oldEditorInput = InputSystem.settings.editorInputBehaviorInPlayMode;
+        inputConfigured = true;
+        Application.runInBackground = true;
+        InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+        InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+        StartCoroutine(Replay());
+    }
 
     private void Input(params Key[] keys)
     {
@@ -74,6 +88,8 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         while (Vector3.Distance(hand.position, target) > 0.03f)
         {
             Require(Time.realtimeSinceStartup < deadline, "Hand movement timed out: " + hand.position + " -> " + target);
+            float speed = Mathf.Clamp(Vector3.Distance(hand.position, target) * 2f, 0.02f, 0.45f);
+            simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = speed;
             var delta = hand.InverseTransformDirection(target - hand.position);
             var keys = new List<Key> { handKey };
             if (delta.x > 0.015f) keys.Add(Key.D); else if (delta.x < -0.015f) keys.Add(Key.A);
@@ -99,6 +115,8 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         while (Vector3.Distance(camera.transform.position, headTarget) > 0.04f)
         {
             Require(Time.realtimeSinceStartup < deadline, "HMD movement timed out");
+            float speed = Mathf.Clamp(Vector3.Distance(camera.transform.position, headTarget) * 0.35f, 0.005f, 0.45f);
+            simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = speed;
             Vector3 movement = camera.transform.InverseTransformDirection(headTarget - camera.transform.position);
             var keys = new List<Key>();
             if (movement.x > 0.02f) keys.Add(Key.D); else if (movement.x < -0.02f) keys.Add(Key.A);
@@ -163,6 +181,8 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         yield return Move(hover);
         yield return new WaitForSeconds(0.3f);
         Require(basket.IsHighlighted, "Right hand did not highlight the basket");
+        var outline = basket.GetComponent<HoverOutline>();
+        Require(outline && outline.IsVisible && outline.RendererCount > 0, "Fryer hover outline is not visible");
         Record("02-right-hover");
         yield return Click();
         Require(IsHeld(), "Basket click did not transfer fries to right hand");
@@ -183,6 +203,7 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         hand = GameObject.Find("Right Controller").transform;
         yield return Move(hover + Vector3.up * 0.4f);
         Require(basket.IsHighlighted, "Highlight disappeared while left hand was still hovering");
+        Require(outline.IsVisible, "Outline disappeared while the left hand was still hovering");
         handKey = Key.LeftShift;
         hand = GameObject.Find("Left Controller").transform;
         yield return Click();
@@ -194,6 +215,7 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
         Require(!grab.isSelected && !grab.GetComponent<Rigidbody>().isKinematic, "Retrieved fries did not release dynamically");
         Require(!basket.IsHighlighted, "Highlight stayed on after both hands left");
+        Require(!outline.IsVisible, "Outline stayed on after both hands left");
         Record("06-released");
         yield return new WaitForEndOfFrame();
         File.WriteAllText(Path.Combine(RPVRFryerInputReplay.Output, "result.txt"), "PASS\n" + string.Join("\n", observations));
@@ -237,6 +259,13 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
     private void OnDestroy() => Cleanup();
     private void Cleanup()
     {
+        if (inputConfigured)
+        {
+            Application.runInBackground = oldBackground;
+            InputSystem.settings.backgroundBehavior = oldInputBackground;
+            InputSystem.settings.editorInputBehaviorInPlayMode = oldEditorInput;
+            inputConfigured = false;
+        }
         foreach (var entry in overlayStates) if (entry.Key) entry.Key.enabled = entry.Value;
         overlayStates.Clear();
         if (simulator)
