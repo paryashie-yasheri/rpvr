@@ -49,7 +49,10 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
     private Mouse mouse;
     private XRDeviceSimulator simulator;
     private Vector3 originalSpeeds;
+    private XRDeviceSimulator.Space originalKeyboardSpace;
     private Transform hand;
+    private Transform playerRoot;
+    private Vector3 playerStartPosition;
     private Key handKey = Key.Space;
     private bool trigger;
     private FryerBasket basket;
@@ -68,19 +71,26 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         InputSystem.QueueStateEvent(mouse, state);
     }
 
-    private IEnumerator Move(Vector3 target)
+    private IEnumerator Move(Vector3 target, float tolerance = 0.03f)
     {
         float deadline = Time.realtimeSinceStartup + 25f;
-        while (Vector3.Distance(hand.position, target) > 0.03f)
+        string latestInput = "no input sample";
+        while (Vector3.Distance(hand.position, target) > tolerance)
         {
-            Require(Time.realtimeSinceStartup < deadline, "Hand movement timed out: " + hand.position + " -> " + target);
-            var delta = hand.InverseTransformDirection(target - hand.position);
+            Require(Time.realtimeSinceStartup < deadline,
+                "Hand movement timed out: " + hand.position + " -> " + target + "; " + latestInput);
+            var delta = target - hand.position;
             var keys = new List<Key> { handKey };
             if (delta.x > 0.015f) keys.Add(Key.D); else if (delta.x < -0.015f) keys.Add(Key.A);
             if (delta.y > 0.015f) keys.Add(Key.E); else if (delta.y < -0.015f) keys.Add(Key.Q);
             if (delta.z > 0.015f) keys.Add(Key.W); else if (delta.z < -0.015f) keys.Add(Key.S);
             Input(keys.ToArray());
             yield return null;
+            latestInput = "keys=" + string.Join(",", keys) + " right=" + simulator.manipulatingRightController
+                + " x=" + simulator.keyboardXTranslateAction.action.ReadValue<float>()
+                + " y=" + simulator.keyboardYTranslateAction.action.ReadValue<float>()
+                + " z=" + simulator.keyboardZTranslateAction.action.ReadValue<float>()
+                + " targets=" + simulator.axis2DTargets;
         }
         Input(handKey);
     }
@@ -92,23 +102,6 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         Input();
         yield return new WaitForSeconds(0.2f);
         var camera = Camera.main;
-        // Move the simulated HMD closer and higher with keyboard input, so the
-        // screenshots show the oil inside the vat rather than only its front wall.
-        Vector3 headTarget = camera.transform.position + new Vector3(-0.75f, 0.45f, 0.2f);
-        float deadline = Time.realtimeSinceStartup + 15f;
-        while (Vector3.Distance(camera.transform.position, headTarget) > 0.04f)
-        {
-            Require(Time.realtimeSinceStartup < deadline, "HMD movement timed out");
-            Vector3 movement = camera.transform.InverseTransformDirection(headTarget - camera.transform.position);
-            var keys = new List<Key>();
-            if (movement.x > 0.02f) keys.Add(Key.D); else if (movement.x < -0.02f) keys.Add(Key.A);
-            if (movement.y > 0.02f) keys.Add(Key.E); else if (movement.y < -0.02f) keys.Add(Key.Q);
-            if (movement.z > 0.02f) keys.Add(Key.W); else if (movement.z < -0.02f) keys.Add(Key.S);
-            Input(keys.ToArray());
-            yield return null;
-        }
-        Input();
-        yield return new WaitForSeconds(0.2f);
         var desired = Quaternion.LookRotation(basket.transform.position - camera.transform.position).eulerAngles;
         var current = camera.transform.eulerAngles;
         InputSystem.QueueStateEvent(mouse, new MouseState { delta = new Vector2(
@@ -117,6 +110,9 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         Input();
         yield return new WaitForSeconds(0.2f);
+        var viewport = camera.WorldToViewportPoint(basket.transform.position);
+        Require(viewport.z > 0f && viewport.x > 0.05f && viewport.x < 0.95f && viewport.y > 0.05f && viewport.y < 0.95f,
+            "Player could not look at the fryer while standing in place: " + viewport);
     }
 
     private IEnumerator Click()
@@ -132,7 +128,9 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         mouse = InputSystem.AddDevice<Mouse>();
         simulator = FindAnyObjectByType<XRDeviceSimulator>();
         originalSpeeds = new Vector3(simulator.keyboardXTranslateSpeed, simulator.keyboardYTranslateSpeed, simulator.keyboardZTranslateSpeed);
-        simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = 0.45f;
+        originalKeyboardSpace = simulator.keyboardTranslateSpace;
+        simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = 0.2f;
+        simulator.keyboardTranslateSpace = XRDeviceSimulator.Space.Parent;
         try { yield return Sequence(); }
         finally { Cleanup(); }
     }
@@ -140,6 +138,8 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
     private IEnumerator Sequence()
     {
         yield return new WaitForSeconds(1f);
+        playerRoot = GameObject.Find("XR Origin (XR Rig)").transform;
+        playerStartPosition = playerRoot.position;
         basket = FindAnyObjectByType<FryerBasket>();
         fries = GameObject.Find("Fries").GetComponent<FryerCookable>();
         grab = fries.GetComponent<XRGrabInteractable>();
@@ -150,10 +150,22 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         }
         Require(GameObject.Find("Liquid Oil Surface").GetComponent<Collider>() == null, "Oil has a solid collider");
         yield return LookAtFryer();
+        Input(Key.Escape);
+        yield return new WaitForSeconds(0.2f);
+        Input();
+        yield return new WaitForSeconds(0.2f);
+        Input(Key.Y);
+        yield return new WaitForSeconds(0.2f);
+        Input();
+        yield return new WaitForSeconds(0.2f);
+        Require(simulator.manipulatingRightController, "Right controller was not selected after turning to the fryer.");
         hand = GameObject.Find("Right Controller").transform;
         Input(Key.Space, Key.Digit3);
         yield return new WaitForSeconds(0.3f);
-        yield return Move(fries.transform.position + Vector3.up * 0.04f);
+        // Approach from above, then lower the hand onto the item. A diagonal
+        // descent can be blocked by the counter lip when the cook stands inside the ring.
+        yield return Move(fries.transform.position + Vector3.up * 0.32f);
+        yield return Move(fries.transform.position + Vector3.up * 0.08f);
         yield return Click();
         Require(IsHeld(), "Right trigger could not grab fries");
         yield return DropIntoOil();
@@ -173,6 +185,10 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
 
         yield return DropIntoOil();
         yield return Move(hover);
+        Input(Key.Escape);
+        yield return new WaitForSeconds(0.2f);
+        Input();
+        yield return new WaitForSeconds(0.2f);
         handKey = Key.LeftShift;
         hand = GameObject.Find("Left Controller").transform;
         yield return Move(hover + Vector3.right * 0.03f);
@@ -188,12 +204,14 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         yield return Click();
         Require(IsHeld() && !fries.IsFrying, "Left hand did not retrieve fries");
         Record("05-left-retrieved");
-        yield return Move(new Vector3(-0.66f, 1.4f, 0.38f));
+        yield return Move(GameObject.Find("Serving Tray").transform.position + Vector3.up * 0.2f);
         trigger = false;
         Input(handKey);
         yield return new WaitForSeconds(0.8f);
         Require(!grab.isSelected && !grab.GetComponent<Rigidbody>().isKinematic, "Retrieved fries did not release dynamically");
         Require(!basket.IsHighlighted, "Highlight stayed on after both hands left");
+        Require(Vector3.Distance(playerRoot.position, playerStartPosition) < 0.01f,
+            "Player moved away from the center during the fryer replay.");
         Record("06-released");
         yield return new WaitForEndOfFrame();
         File.WriteAllText(Path.Combine(RPVRFryerInputReplay.Output, "result.txt"), "PASS\n" + string.Join("\n", observations));
@@ -204,7 +222,9 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
     {
         yield return Move(hand.position + Vector3.up * 0.25f);
         Vector3 offset = hand.position - fries.transform.position;
-        yield return Move(new Vector3(-1.9f, 1.48f, -0.05f) + offset);
+        var oil = GameObject.Find("Fryer Cooking Zone").GetComponent<Collider>().bounds;
+        Vector3 dropPoint = oil.center + Vector3.up * 0.34f;
+        yield return Move(dropPoint + offset);
         // Let grab velocity settle so release drops the portion instead of throwing it.
         yield return new WaitForSeconds(0.5f);
         trigger = false;
@@ -244,6 +264,7 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
             simulator.keyboardXTranslateSpeed = originalSpeeds.x;
             simulator.keyboardYTranslateSpeed = originalSpeeds.y;
             simulator.keyboardZTranslateSpeed = originalSpeeds.z;
+            simulator.keyboardTranslateSpace = originalKeyboardSpace;
         }
         if (keyboard != null && keyboard.added) InputSystem.RemoveDevice(keyboard);
         if (mouse != null && mouse.added) InputSystem.RemoveDevice(mouse);

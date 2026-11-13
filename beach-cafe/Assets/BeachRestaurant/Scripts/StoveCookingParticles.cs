@@ -4,6 +4,7 @@ using UnityEngine.Rendering;
 [RequireComponent(typeof(StoveCookable))]
 public class StoveCookingParticles : MonoBehaviour
 {
+    public bool IsSteaming => steam && steam.isEmitting;
     public bool IsSmoking => smoke && smoke.isEmitting;
 
     private StoveCookable cookable;

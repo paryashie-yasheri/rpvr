@@ -59,6 +59,8 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
 {
     private Keyboard keyboard;
     private Mouse mouse;
+    private UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRDeviceSimulator simulator;
+    private Vector3 originalSpeeds;
     private Transform hand;
     private StoveCookable patty;
     private XRGrabInteractable grab;
@@ -126,6 +128,9 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
     {
         keyboard = InputSystem.AddDevice<Keyboard>();
         mouse = InputSystem.AddDevice<Mouse>();
+        simulator = FindAnyObjectByType<UnityEngine.XR.Interaction.Toolkit.Inputs.Simulation.XRDeviceSimulator>();
+        originalSpeeds = new Vector3(simulator.keyboardXTranslateSpeed, simulator.keyboardYTranslateSpeed, simulator.keyboardZTranslateSpeed);
+        simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = 0.08f;
         try
         {
             yield return RunSequence();
@@ -143,6 +148,12 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
     {
         if (keyboard != null && keyboard.added) InputSystem.RemoveDevice(keyboard);
         if (mouse != null && mouse.added) InputSystem.RemoveDevice(mouse);
+        if (simulator)
+        {
+            simulator.keyboardXTranslateSpeed = originalSpeeds.x;
+            simulator.keyboardYTranslateSpeed = originalSpeeds.y;
+            simulator.keyboardZTranslateSpeed = originalSpeeds.z;
+        }
     }
 
     private IEnumerator RunSequence()
@@ -163,7 +174,8 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         Input(Key.Space);
         yield return new WaitForSeconds(0.2f);
-        yield return Move(patty.transform.position + Vector3.up * 0.04f);
+        var pattyCollider = patty.GetComponent<Collider>();
+        yield return Move(pattyCollider.bounds.center + Vector3.up * (pattyCollider.bounds.extents.y + 0.04f));
         yield return new WaitForSeconds(0.4f);
         trigger = true;
         Input(Key.Space);
@@ -182,8 +194,7 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(1f);
         Require(!interactor.interactablesSelected.Contains(grab), "Patty did not release");
         Record("released");
-        var steam = GameObject.Find("Sizzle steam").GetComponent<ParticleSystem>();
-        var smoke = GameObject.Find("Overcooking smoke").GetComponent<ParticleSystem>();
+        var particles = patty.GetComponent<StoveCookingParticles>();
         bool sawReadyRange = false;
         bool sawSmoke = false;
         bool sawOvercooked = false;
@@ -193,13 +204,13 @@ public sealed class RPVRStoveInputReplayRunner : MonoBehaviour
             if (ready && stoveAudio.isPlaying) heardReady = true;
             if (patty.cookProgress >= 0.81f && patty.cookProgress < 0.95f && !sawReadyRange)
             {
-                Require(patty.IsReady && steam.isEmitting && !smoke.isEmitting, "Ready range or pre-smoke steam is incorrect");
+                Require(patty.IsReady && particles.IsSteaming && !particles.IsSmoking, "Ready range or pre-smoke steam is incorrect");
                 sawReadyRange = true;
                 Record("ready-start");
             }
             if (patty.cookProgress >= 1.03f && !sawSmoke)
             {
-                Require(patty.IsReady && smoke.isEmitting, "Smoke did not start at progress 1.0");
+                Require(patty.IsReady && particles.IsSmoking, "Smoke did not start at progress 1.0");
                 sawSmoke = true;
                 Record("smoking");
             }
