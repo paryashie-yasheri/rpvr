@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public static class HoverOutlineSetup
 {
@@ -20,6 +21,7 @@ public static class HoverOutlineSetup
         outline.outlineColor = Color.white;
         outline.outlinePixels = 2.5f;
         outline.targetRenderers = target.GetComponentsInChildren<MeshRenderer>();
+        if (target.GetComponent<XRBaseInteractable>() && !target.GetComponent<InteractableOutline>()) target.AddComponent<InteractableOutline>();
         EditorUtility.SetDirty(outline);
         return outline;
     }

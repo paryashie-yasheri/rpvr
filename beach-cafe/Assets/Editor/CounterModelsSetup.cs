@@ -51,6 +51,7 @@ public static class CounterModelsSetup
         grab.colliders.Add(shape);
         var serving = cup.GetComponent<ServingItem>() ?? cup.AddComponent<ServingItem>();
         serving.itemType = OrderItem.Soda;
+        SodaSceneSetup.Configure(cup);
         SavePrefab(cup, Root + "SodaCup/Soda Cup.prefab");
     }
 

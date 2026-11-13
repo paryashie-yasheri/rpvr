@@ -10,6 +10,7 @@ public sealed class TrayContents : MonoBehaviour
     public IReadOnlyList<ServingItem> Items => items;
     public bool HasBurger => Count(OrderItem.Burger) > 0;
     public bool HasFries => Count(OrderItem.Fries) > 0;
+    public bool HasSoda => Count(OrderItem.Soda) > 0;
     public event Action ContentsChanged;
 
     private void Awake()

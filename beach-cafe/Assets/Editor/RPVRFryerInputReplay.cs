@@ -159,6 +159,7 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         basket = FindAnyObjectByType<FryerBasket>();
         fries = GameObject.Find("Fries").GetComponent<FryerCookable>();
         grab = fries.GetComponent<XRGrabInteractable>();
+        Vector3 freeReleasePoint = fries.transform.position + Vector3.up * 0.25f;
         foreach (var canvas in simulator.GetComponentsInChildren<Canvas>())
         {
             overlayStates.Add(canvas, canvas.enabled);
@@ -223,7 +224,9 @@ public sealed class RPVRFryerInputReplayRunner : MonoBehaviour
         yield return Click();
         Require(IsHeld() && !fries.IsFrying, "Left hand did not retrieve fries");
         Record("05-left-retrieved");
-        yield return Move(GameObject.Find("Serving Tray").transform.position + Vector3.up * 0.2f);
+        // Release over the supply counter; dropping onto the tray correctly
+        // socket-selects fries and would not exercise a free physics release.
+        yield return Move(freeReleasePoint);
         trigger = false;
         Input(handKey);
         yield return new WaitForSeconds(0.8f);

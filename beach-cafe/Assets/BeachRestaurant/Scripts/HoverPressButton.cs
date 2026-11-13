@@ -7,7 +7,7 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 [RequireComponent(typeof(XRSimpleInteractable))]
-[RequireComponent(typeof(HoverOutline))]
+[RequireComponent(typeof(InteractableOutline))]
 public sealed class HoverPressButton : MonoBehaviour, IXRSelectFilter
 {
     [Tooltip("Invoked in order, once for each press. Configure actions in the Inspector.")]
@@ -17,10 +17,10 @@ public sealed class HoverPressButton : MonoBehaviour, IXRSelectFilter
     [Min(0.01f)] public float pressDuration = 0.16f;
 
     public XRSimpleInteractable Interaction { get; private set; }
-    public bool IsHighlighted { get; private set; }
+    public bool IsHighlighted => outline && outline.IsHighlighted;
     public bool canProcess => isActiveAndEnabled;
 
-    private HoverOutline outline;
+    private InteractableOutline outline;
     private Vector3 visualRestPosition;
     private float pressedAt;
     private bool animating;
@@ -29,15 +29,13 @@ public sealed class HoverPressButton : MonoBehaviour, IXRSelectFilter
     private void Awake()
     {
         Interaction = GetComponent<XRSimpleInteractable>();
-        outline = GetComponent<HoverOutline>();
+        outline = GetComponent<InteractableOutline>();
         if (pressVisual) visualRestPosition = pressVisual.localPosition;
         initialized = true;
     }
 
     private void OnEnable()
     {
-        Interaction.hoverEntered.AddListener(OnHoverEntered);
-        Interaction.hoverExited.AddListener(OnHoverExited);
         Interaction.selectEntered.AddListener(OnSelectEntered);
         Interaction.selectFilters.Add(this);
     }
@@ -50,8 +48,6 @@ public sealed class HoverPressButton : MonoBehaviour, IXRSelectFilter
         return true;
     }
 
-    private void OnHoverEntered(HoverEnterEventArgs args) => SetHighlight(true);
-    private void OnHoverExited(HoverExitEventArgs args) => SetHighlight(Interaction.isHovered);
     private void OnSelectEntered(SelectEnterEventArgs args) => Press();
 
     public void Press()
@@ -72,20 +68,11 @@ public sealed class HoverPressButton : MonoBehaviour, IXRSelectFilter
         if (t >= 1f) animating = false;
     }
 
-    private void SetHighlight(bool active)
-    {
-        IsHighlighted = active;
-        if (outline) outline.SetVisible(active);
-    }
-
     private void OnDisable()
     {
         animating = false;
         if (initialized && pressVisual) pressVisual.localPosition = visualRestPosition;
-        SetHighlight(false);
         if (!Interaction) return;
-        Interaction.hoverEntered.RemoveListener(OnHoverEntered);
-        Interaction.hoverExited.RemoveListener(OnHoverExited);
         Interaction.selectEntered.RemoveListener(OnSelectEntered);
         Interaction.selectFilters.Remove(this);
     }

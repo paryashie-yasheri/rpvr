@@ -115,7 +115,7 @@ public class BurgerAssembly : MonoBehaviour
         foreach (var source in item.GetComponentsInChildren<MeshFilter>())
         {
             var sourceRenderer = source.GetComponent<MeshRenderer>();
-            if (!sourceRenderer || !source.sharedMesh) continue;
+            if (!sourceRenderer || !sourceRenderer.enabled || !source.sharedMesh || sourceRenderer.GetComponent<OutlineGeometry>()) continue;
             var visual = new GameObject(source.name + " preview");
             visual.transform.SetParent(preview.transform, false);
             visual.transform.localPosition = item.transform.InverseTransformPoint(source.transform.position);

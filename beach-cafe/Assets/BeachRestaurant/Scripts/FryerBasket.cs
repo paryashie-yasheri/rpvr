@@ -5,36 +5,27 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 [RequireComponent(typeof(XRSimpleInteractable))]
-[RequireComponent(typeof(HoverOutline))]
+[RequireComponent(typeof(InteractableOutline))]
 public sealed class FryerBasket : MonoBehaviour, UnityEngine.XR.Interaction.Toolkit.Filtering.IXRSelectFilter
 {
     public Fryer fryer;
     public XRSimpleInteractable Interaction { get; private set; }
     public bool canProcess => isActiveAndEnabled;
 
-    private HoverOutline outline;
+    private InteractableOutline outline;
     private IXRSelectInteractor pendingHand;
-    public bool IsHighlighted { get; private set; }
+    public bool IsHighlighted => outline && outline.IsHighlighted;
 
     private void Awake()
     {
         Interaction = GetComponent<XRSimpleInteractable>();
-        outline = GetComponent<HoverOutline>();
+        outline = GetComponent<InteractableOutline>();
     }
 
     private void OnEnable()
     {
-        Interaction.hoverEntered.AddListener(OnHoverEntered);
-        Interaction.hoverExited.AddListener(OnHoverExited);
         Interaction.selectEntered.AddListener(OnSelectEntered);
         Interaction.selectFilters.Add(this);
-    }
-
-    private void OnHoverEntered(HoverEnterEventArgs args) => SetHighlight(true);
-
-    private void OnHoverExited(HoverExitEventArgs args)
-    {
-        SetHighlight(Interaction.isHovered);
     }
 
     public bool Process(IXRSelectInteractor interactor, IXRSelectInteractable interactable)
@@ -99,19 +90,10 @@ public sealed class FryerBasket : MonoBehaviour, UnityEngine.XR.Interaction.Tool
         }
     }
 
-    private void SetHighlight(bool active)
-    {
-        IsHighlighted = active;
-        if (outline) outline.SetVisible(active);
-    }
-
     private void OnDisable()
     {
         pendingHand = null;
-        SetHighlight(false);
         if (!Interaction) return;
-        Interaction.hoverEntered.RemoveListener(OnHoverEntered);
-        Interaction.hoverExited.RemoveListener(OnHoverExited);
         Interaction.selectEntered.RemoveListener(OnSelectEntered);
         Interaction.selectFilters.Remove(this);
     }

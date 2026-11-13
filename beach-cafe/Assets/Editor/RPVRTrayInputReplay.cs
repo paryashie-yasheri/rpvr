@@ -41,6 +41,7 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
     private Mouse mouse;
     private XRDeviceSimulator simulator;
     private Vector3 oldSpeeds;
+    private XRDeviceSimulator.Space oldKeyboardSpace;
     private bool configured;
     private bool oldBackground;
     private bool inputConfigured;
@@ -81,7 +82,9 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
         while (Vector3.Distance(moving.position, target) > 0.03f)
         {
             Require(Time.realtimeSinceStartup < deadline, "Movement timed out: " + moving.position + " -> " + target);
-            var delta = moving.InverseTransformDirection(target - moving.position);
+            float speed = Mathf.Clamp(Vector3.Distance(moving.position, target) * (head ? 0.35f : 2f), 0.01f, 0.35f);
+            simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = speed;
+            var delta = moving.parent.InverseTransformDirection(target - moving.position);
             var keys = new List<Key>();
             if (!head) keys.Add(Key.Space);
             if (delta.x > 0.015f) keys.Add(Key.D); else if (delta.x < -0.015f) keys.Add(Key.A);
@@ -99,7 +102,6 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(0.2f);
         Input();
         yield return new WaitForSeconds(0.2f);
-        yield return Move(new Vector3(-0.1f, 1.8f, 0.05f), true);
         var camera = Camera.main;
         var desired = Quaternion.LookRotation(contents.transform.position - camera.transform.position).eulerAngles;
         var current = camera.transform.eulerAngles;
@@ -109,26 +111,53 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         Input();
         yield return new WaitForSeconds(0.2f);
+        Input(Key.Escape);
+        yield return new WaitForSeconds(0.2f);
+        Input(Key.Y);
+        yield return new WaitForSeconds(0.2f);
         Input(Key.Space);
     }
 
     private IEnumerator Grab(XRGrabInteractable item)
     {
-        yield return Move(item.transform.position + Vector3.up * 0.04f);
+        var shapes = item.colliders;
+        Bounds bounds = shapes[0].bounds;
+        foreach (var shape in shapes) bounds.Encapsulate(shape.bounds);
+        Vector3 approach = bounds.center + Vector3.up * (bounds.extents.y + 0.04f);
+        float carryHeight = Mathf.Max(hand.position.y, approach.y + 0.35f);
+        yield return Move(new Vector3(hand.position.x, carryHeight, hand.position.z));
+        yield return Move(new Vector3(approach.x, carryHeight, approach.z));
+        yield return Move(approach);
         yield return new WaitForSeconds(0.25f);
         trigger = true;
         Input(Key.Space);
         yield return new WaitForSeconds(0.4f);
         Require(interactor.interactablesSelected.Contains(item), "Could not grab " + item.name);
         Require(!item.GetComponent<Rigidbody>().isKinematic, "Held item is not dynamic");
-        yield return Move(hand.position + Vector3.up * 0.25f);
+        var outline = item.GetComponent<HoverOutline>();
+        Require(outline && outline.IsVisible, "Held item has no interaction outline: " + item.name);
+        yield return Move(hand.position + Vector3.up * 0.4f);
+        yield return new WaitForSeconds(0.4f);
     }
 
     private IEnumerator Place(XRGrabInteractable item, TraySlot slot, string stage)
     {
         Vector3 offset = hand.position - item.transform.position;
-        yield return Move(slot.GetAttachTransform(item).position + offset + Vector3.up * 0.065f);
+        float previewLift = slot.GetComponent<BoxCollider>().bounds.size.y * 0.35f;
+        Vector3 destination = slot.GetAttachTransform(item).position + offset + Vector3.up * previewLift;
+        float carryHeight = Mathf.Max(hand.position.y, slot.transform.position.y + 0.6f);
+        yield return Move(new Vector3(hand.position.x, carryHeight, hand.position.z));
+        yield return Move(new Vector3(destination.x, carryHeight, destination.z));
+        yield return Move(destination);
         yield return new WaitForSeconds(0.5f);
+        // Velocity tracking and dynamic attach can settle after a socket-to-hand
+        // transfer. Correct the approach using the held item's observed pose.
+        for (int attempt = 0; attempt < 4 && !slot.interactablesHovered.Contains(item); attempt++)
+        {
+            Vector3 desired = slot.GetAttachTransform(item).position + Vector3.up * previewLift;
+            yield return Move(hand.position + desired - item.transform.position);
+            yield return new WaitForSeconds(0.4f);
+        }
         Require(slot.interactablesHovered.Contains(item), "Correct slot did not offer a snap preview");
         Require(slot.Item == null, "Socket stole the food before release");
         Record(stage + "-preview");
@@ -163,6 +192,8 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
         yield return null;
         simulator = FindAnyObjectByType<XRDeviceSimulator>();
         oldSpeeds = new Vector3(simulator.keyboardXTranslateSpeed, simulator.keyboardYTranslateSpeed, simulator.keyboardZTranslateSpeed);
+        oldKeyboardSpace = simulator.keyboardTranslateSpace;
+        simulator.keyboardTranslateSpace = XRDeviceSimulator.Space.Parent;
         configured = true;
         simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = 0.35f;
         keyboard = InputSystem.AddDevice<Keyboard>();
@@ -178,9 +209,11 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
         var friesGrab = GameObject.Find("Fries").GetComponent<XRGrabInteractable>();
         var burgerSlot = contents.slots[0];
         var friesSlot = contents.slots[1];
+        var sodaSlot = contents.slots[2];
         Require(!burgerSlot.CanHover((IXRHoverInteractable)friesGrab) && !friesSlot.CanHover((IXRHoverInteractable)burgerGrab), "Slots accept the wrong food type");
         var cup = GameObject.Find("Cup").GetComponent<XRGrabInteractable>();
         Require(!burgerSlot.CanHover((IXRHoverInteractable)cup) && !friesSlot.CanHover((IXRHoverInteractable)cup), "Burger/fries slots accept soda");
+        Require(!sodaSlot.CanHover((IXRHoverInteractable)burgerGrab) && !sodaSlot.CanHover((IXRHoverInteractable)friesGrab), "Soda slot accepts food");
         yield return LookAtTray();
         Record("01-empty");
         yield return Grab(burgerGrab);
@@ -200,9 +233,20 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(0.8f);
         yield return Place(friesGrab, friesSlot, "07-complete");
         Require(contents.Count(OrderItem.Burger) == 1 && contents.Count(OrderItem.Fries) == 1 && changes >= 6, "Tray contents/count events are incorrect");
+        yield return Grab(cup);
+        yield return Place(cup, sodaSlot, "08-soda");
+        Require(contents.HasSoda && contents.Items.Count == 3 && contents.Count(OrderItem.Soda) == 1, "Tray did not track the soda");
+        yield return Grab(cup);
+        Require(!contents.HasSoda && contents.HasBurger && contents.HasFries && contents.Items.Count == 2, "Taking soda removed the wrong item");
+        Record("09-soda-removed");
+        yield return new WaitForSeconds(0.8f);
+        yield return Place(cup, sodaSlot, "10-full-order");
+        yield return Move(hand.position + Vector3.up * 0.4f);
+        yield return new WaitForSeconds(0.2f);
+        Require(contents.Items.Count == 3 && !cup.GetComponent<HoverOutline>().IsVisible, "Socketed soda stays outlined without hand interaction");
         yield return new WaitForEndOfFrame();
         File.WriteAllText(Path.Combine(RPVRTrayInputReplay.Output, "result.txt"), "PASS\n" + string.Join("\n", observations));
-        Debug.Log("RPVR tray input replay passed: typed slots, preview, snap, remove, replace, live tray contents.");
+        Debug.Log("RPVR tray input replay passed: burger, fries, soda, typed slots, outlines, removal/replacement and live contents.");
     }
 
     private void OnContentsChanged() => changes++;
@@ -210,7 +254,7 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
     {
         var point = Camera.main.WorldToViewportPoint(contents.transform.position);
         Require(point.z > 0 && point.x > 0.1f && point.x < 0.9f && point.y > 0.1f && point.y < 0.9f, "Player cannot see the tray");
-        observations.Add(stage + " burger=" + contents.HasBurger + " fries=" + contents.HasFries + " count=" + contents.Items.Count);
+        observations.Add(stage + " burger=" + contents.HasBurger + " fries=" + contents.HasFries + " soda=" + contents.HasSoda + " count=" + contents.Items.Count);
         ScreenCapture.CaptureScreenshot(Path.Combine(RPVRTrayInputReplay.Output, stage + ".png"));
     }
 
@@ -240,6 +284,7 @@ public sealed class RPVRTrayInputReplayRunner : MonoBehaviour
             simulator.keyboardXTranslateSpeed = oldSpeeds.x;
             simulator.keyboardYTranslateSpeed = oldSpeeds.y;
             simulator.keyboardZTranslateSpeed = oldSpeeds.z;
+            simulator.keyboardTranslateSpace = oldKeyboardSpace;
         }
         if (keyboard != null && keyboard.added) InputSystem.RemoveDevice(keyboard);
         if (mouse != null && mouse.added) InputSystem.RemoveDevice(mouse);

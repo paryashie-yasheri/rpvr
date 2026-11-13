@@ -38,7 +38,11 @@ public static class RPVRBurgerInputReplay
         SessionState.SetBool(RecordKey, record);
         SessionState.SetBool(PendingKey, true);
         if (EditorApplication.isPlaying) EditorApplication.isPlaying = false;
-        else EditorApplication.isPlaying = true;
+        else
+        {
+            ReloadSceneForReplay();
+            EditorApplication.isPlaying = true;
+        }
     }
 
     private static void StartWhenPlaying(PlayModeStateChange state)
@@ -46,12 +50,22 @@ public static class RPVRBurgerInputReplay
         if (!SessionState.GetBool(PendingKey, false)) return;
         if (state == PlayModeStateChange.EnteredEditMode)
         {
-            EditorApplication.delayCall += () => EditorApplication.isPlaying = true;
+            EditorApplication.delayCall += () => { ReloadSceneForReplay(); EditorApplication.isPlaying = true; };
             return;
         }
         if (state != PlayModeStateChange.EnteredPlayMode) return;
         SessionState.SetBool(PendingKey, false);
         StartReplay();
+    }
+
+    private static void ReloadSceneForReplay()
+    {
+        // This project skips scene/domain reload on Play Mode entry. Simulator state
+        // can survive the previous run, which invalidates recorded movement timings.
+        var scene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
+        if (scene.isDirty || string.IsNullOrEmpty(scene.path))
+            throw new InvalidOperationException("Save the scene before running an input replay.");
+        UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scene.path);
     }
 
     private static void StartReplay()

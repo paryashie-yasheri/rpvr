@@ -33,3 +33,10 @@ Thumbs.db
 # Crash/report output
 sysinfo.txt
 *.stackdump
+
+# Local Unity recovery, Android build caches, and crash artifacts
+/beach-cafe/.utmp/
+/beach-cafe/Assets/_Recovery/
+/beach-cafe/Assets/_Recovery.meta
+/beach-cafe/build/
+/beach-cafe/mono_crash*.blob

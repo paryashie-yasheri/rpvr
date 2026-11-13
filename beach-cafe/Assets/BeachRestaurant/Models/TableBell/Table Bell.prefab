@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 1402627832928705587}
   - component: {fileID: 1336580865954532941}
   - component: {fileID: 6466973468534155275}
+  - component: {fileID: 3397567396518211667}
   m_Layer: 0
   m_Name: Table Bell
   m_TagString: Untagged
@@ -31,7 +32,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.85, y: 0.85, z: 0.85}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7891995393649988409}
@@ -286,6 +287,18 @@ MonoBehaviour:
   outlineMaterial: {fileID: 2100000, guid: d8f7a1c0350517b1e897cd725fcdd160, type: 2}
   outlineColor: {r: 1, g: 1, b: 1, a: 1}
   outlinePixels: 2.5
+--- !u!114 &3397567396518211667
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4155758296958797207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe55a8f088856674eaea9a14459c4671, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::InteractableOutline
 --- !u!1001 &7642404618059363538
 PrefabInstance:
   m_ObjectHideFlags: 0

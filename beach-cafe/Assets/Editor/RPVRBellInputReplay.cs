@@ -46,6 +46,7 @@ public sealed class RPVRBellInputReplayRunner : MonoBehaviour
     private Mouse mouse;
     private XRDeviceSimulator simulator;
     private Vector3 oldSpeeds;
+    private XRDeviceSimulator.Space oldKeyboardSpace;
     private bool configured;
     private Transform hand;
     private Key handKey = Key.Space;
@@ -90,7 +91,7 @@ public sealed class RPVRBellInputReplayRunner : MonoBehaviour
             Require(Time.realtimeSinceStartup < deadline, "Movement timed out: " + moving.position + " -> " + target);
             float speed = Mathf.Clamp(Vector3.Distance(moving.position, target) * 2f, 0.02f, 0.4f);
             simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = speed;
-            var delta = moving.InverseTransformDirection(target - moving.position);
+            var delta = moving.parent.InverseTransformDirection(target - moving.position);
             var keys = new List<Key>();
             keys.Add(handKey);
             if (delta.x > 0.015f) keys.Add(Key.D); else if (delta.x < -0.015f) keys.Add(Key.A);
@@ -147,6 +148,8 @@ public sealed class RPVRBellInputReplayRunner : MonoBehaviour
         yield return new WaitForSeconds(1f);
         simulator = FindAnyObjectByType<XRDeviceSimulator>();
         oldSpeeds = new Vector3(simulator.keyboardXTranslateSpeed, simulator.keyboardYTranslateSpeed, simulator.keyboardZTranslateSpeed);
+        oldKeyboardSpace = simulator.keyboardTranslateSpace;
+        simulator.keyboardTranslateSpace = XRDeviceSimulator.Space.Parent;
         configured = true;
         simulator.keyboardXTranslateSpeed = simulator.keyboardYTranslateSpeed = simulator.keyboardZTranslateSpeed = 0.4f;
         foreach (var canvas in simulator.GetComponentsInChildren<Canvas>()) { overlays.Add(canvas, canvas.enabled); canvas.enabled = false; }
@@ -163,6 +166,10 @@ public sealed class RPVRBellInputReplayRunner : MonoBehaviour
         button.onPressed.Add(probeA);
         button.onPressed.Add(probeB);
         yield return LookAtBell();
+        Input(Key.Escape);
+        yield return new WaitForSeconds(0.2f);
+        Input(Key.Y);
+        yield return new WaitForSeconds(0.2f);
         hand = GameObject.Find("Right Controller").transform;
         Input(Key.Space, Key.Digit3);
         yield return new WaitForSeconds(0.2f);
@@ -185,6 +192,10 @@ public sealed class RPVRBellInputReplayRunner : MonoBehaviour
         Require(callbacks.Count == 4, "Second press did not ring again");
         yield return Release();
 
+        Input(Key.Escape);
+        yield return new WaitForSeconds(0.2f);
+        Input();
+        yield return new WaitForSeconds(0.2f);
         handKey = Key.LeftShift;
         hand = GameObject.Find("Left Controller").transform;
         yield return Move(button.transform.position + new Vector3(0.115f, 0.12f, -0.015f));
@@ -241,6 +252,7 @@ public sealed class RPVRBellInputReplayRunner : MonoBehaviour
             simulator.keyboardXTranslateSpeed = oldSpeeds.x;
             simulator.keyboardYTranslateSpeed = oldSpeeds.y;
             simulator.keyboardZTranslateSpeed = oldSpeeds.z;
+            simulator.keyboardTranslateSpace = oldKeyboardSpace;
         }
         configured = false;
         if (inputConfigured)

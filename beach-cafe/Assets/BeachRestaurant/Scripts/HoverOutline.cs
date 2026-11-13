@@ -19,22 +19,36 @@ public sealed class HoverOutline : MonoBehaviour
     private void Awake()
     {
         properties = new MaterialPropertyBlock();
+        Rebuild();
+    }
+
+    public void Rebuild()
+    {
+        bool visible = IsVisible;
+        foreach (var shell in shells) if (shell) Destroy(shell.gameObject);
+        shells.Clear();
+        if (properties == null) properties = new MaterialPropertyBlock();
+        if (ownedMaterial && outlineMaterial != ownedMaterial)
+        {
+            Destroy(ownedMaterial);
+            ownedMaterial = null;
+        }
         if (!outlineMaterial)
         {
             var shader = Shader.Find("BeachRestaurant/Hover Outline");
             if (shader) outlineMaterial = ownedMaterial = new Material(shader);
         }
         if (!outlineMaterial) { Debug.LogError("Assign a hover outline material.", this); return; }
-        if (targetRenderers == null || targetRenderers.Length == 0)
-            targetRenderers = GetComponentsInChildren<MeshRenderer>();
-        foreach (var source in targetRenderers)
+        var sources = targetRenderers != null && targetRenderers.Length > 0 ? targetRenderers : GetComponentsInChildren<MeshRenderer>();
+        foreach (var source in sources)
         {
-            if (!source || !source.enabled || !source.gameObject.activeInHierarchy) continue;
+            if (!source || !source.enabled || !source.gameObject.activeInHierarchy || source.GetComponent<OutlineGeometry>()) continue;
             var filter = source.GetComponent<MeshFilter>();
             if (!filter || !filter.sharedMesh) continue;
             var shell = new GameObject("Hover Outline");
             shell.layer = source.gameObject.layer;
             shell.transform.SetParent(source.transform, false);
+            shell.AddComponent<OutlineGeometry>();
             shell.AddComponent<MeshFilter>().sharedMesh = filter.sharedMesh;
             var renderer = shell.AddComponent<MeshRenderer>();
             var materials = new Material[filter.sharedMesh.subMeshCount];
@@ -47,6 +61,7 @@ public sealed class HoverOutline : MonoBehaviour
             renderer.enabled = false;
             shells.Add(renderer);
         }
+        SetVisible(visible);
     }
 
     public void SetVisible(bool visible)

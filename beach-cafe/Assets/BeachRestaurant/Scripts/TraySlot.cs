@@ -41,7 +41,8 @@ public sealed class TraySlot : XRSocketInteractor
             bool first = true;
             foreach (var filter in root.GetComponentsInChildren<MeshFilter>())
             {
-                if (!filter.sharedMesh) continue;
+                var renderer = filter.GetComponent<MeshRenderer>();
+                if (!filter.sharedMesh || !renderer || !renderer.enabled || renderer.GetComponent<OutlineGeometry>()) continue;
                 var matrix = root.worldToLocalMatrix * filter.transform.localToWorldMatrix;
                 var bounds = filter.sharedMesh.bounds;
                 for (int corner = 0; corner < 8; corner++)
