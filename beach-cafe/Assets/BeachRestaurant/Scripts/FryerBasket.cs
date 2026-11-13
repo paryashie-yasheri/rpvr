@@ -5,31 +5,21 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 [RequireComponent(typeof(XRSimpleInteractable))]
+[RequireComponent(typeof(HoverOutline))]
 public sealed class FryerBasket : MonoBehaviour, UnityEngine.XR.Interaction.Toolkit.Filtering.IXRSelectFilter
 {
     public Fryer fryer;
     public XRSimpleInteractable Interaction { get; private set; }
     public bool canProcess => isActiveAndEnabled;
-    public Renderer[] highlightRenderers;
-    public Color hoverColor = new Color(1f, 0.72f, 0.18f);
 
-    private MaterialPropertyBlock[] originalProperties;
-    private MaterialPropertyBlock highlight;
+    private HoverOutline outline;
     private IXRSelectInteractor pendingHand;
     public bool IsHighlighted { get; private set; }
 
     private void Awake()
     {
         Interaction = GetComponent<XRSimpleInteractable>();
-        highlight = new MaterialPropertyBlock();
-        if (highlightRenderers == null || highlightRenderers.Length == 0)
-            highlightRenderers = GetComponentsInChildren<Renderer>();
-        originalProperties = new MaterialPropertyBlock[highlightRenderers.Length];
-        for (int i = 0; i < highlightRenderers.Length; i++)
-        {
-            originalProperties[i] = new MaterialPropertyBlock();
-            if (highlightRenderers[i]) highlightRenderers[i].GetPropertyBlock(originalProperties[i]);
-        }
+        outline = GetComponent<HoverOutline>();
     }
 
     private void OnEnable()
@@ -112,16 +102,7 @@ public sealed class FryerBasket : MonoBehaviour, UnityEngine.XR.Interaction.Tool
     private void SetHighlight(bool active)
     {
         IsHighlighted = active;
-        if (originalProperties == null) return;
-        for (int i = 0; i < highlightRenderers.Length; i++)
-        {
-            var renderer = highlightRenderers[i];
-            if (!renderer) continue;
-            if (!active) { renderer.SetPropertyBlock(originalProperties[i]); continue; }
-            renderer.GetPropertyBlock(highlight);
-            highlight.SetColor("_BaseColor", hoverColor);
-            renderer.SetPropertyBlock(highlight);
-        }
+        if (outline) outline.SetVisible(active);
     }
 
     private void OnDisable()

@@ -8,6 +8,18 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors.Casters;
 
 public static class FryerInteractionSetup
 {
+    [MenuItem("Beach Restaurant/Setup Fryer Hover Outline")]
+    public static void SetupOutline()
+    {
+        if (Application.isPlaying) throw new System.InvalidOperationException("Stop Play Mode first.");
+        var basket = GameObject.Find("Fryer Basket");
+        if (!basket) throw new System.InvalidOperationException("Fryer Basket is missing.");
+        HoverOutlineSetup.Configure(basket);
+        EditorSceneManager.MarkSceneDirty(basket.scene);
+        EditorSceneManager.SaveOpenScenes();
+        AssetDatabase.SaveAssets();
+    }
+
     [MenuItem("Beach Restaurant/Setup Fryer Oil and Retrieval")]
     public static void Setup()
     {
@@ -81,7 +93,7 @@ public static class FryerInteractionSetup
         colliders.GetArrayElementAtIndex(1).objectReferenceValue = handle.GetComponent<BoxCollider>();
         serialized.FindProperty("m_InteractionLayers.m_Bits").intValue = 1;
         serialized.ApplyModifiedPropertiesWithoutUndo();
-        interaction.highlightRenderers = basket.GetComponentsInChildren<Renderer>();
+        HoverOutlineSetup.Configure(basket);
         // The basket's broad hover volume is a trigger so food can fall through it.
         // Let both hands' near casters detect it; far rays can still hit the handle.
         foreach (var hand in Object.FindObjectsByType<NearFarInteractor>())

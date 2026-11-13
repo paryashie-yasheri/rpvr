@@ -13,6 +13,7 @@ public class BurgerAssembly : MonoBehaviour
     public GameObject PreviewObject => preview;
     public Rigidbody AssemblyBody => assemblyBody ? assemblyBody : GetComponent<Rigidbody>();
     public int IngredientCount => ingredients.Count;
+    public bool IsComplete => closed;
 
     private readonly List<BurgerIngredient> ingredients = new List<BurgerIngredient>();
     private BurgerIngredient candidate;
@@ -157,6 +158,7 @@ public class BurgerAssembly : MonoBehaviour
             baseBody.isKinematic = true;
             baseBody.detectCollisions = false;
             var root = new GameObject("Burger Assembly");
+            root.AddComponent<ServingItem>().itemType = OrderItem.Burger;
             root.transform.SetPositionAndRotation(transform.position, transform.rotation);
             transform.SetParent(root.transform, true);
             float baseMass = baseBody.mass;
